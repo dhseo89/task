@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.task.mapper.MonthlyDataMapper">
+
+    <select id="getMonthlyMinData" resultType="ResultData">	
+		select
+			mon ||'월' as "month",
+			cnt,
+			line,
+			station
+		from
+		(
+			(select 
+				line,
+				station,
+				row_number() over(partition by mon order by cnt) ranking,
+				mon,
+				cnt
+			from
+				(select line,
+					   station,
+					   unnest(array[1,2,3,4,5,6,7,8,9,10,11,12]) as mon,
+					   unnest(array[jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,"dec"]) as cnt
+				from monthly_data) a
+			)
+		) b
+		where ranking = 1
+		order by mon    
+    </select>
+    
+    <select id="getMostGapData" resultType="ResultData">
+		select line, station, gap from
+			(select 
+				line, 
+				station,
+				greatest(jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec) - least(jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec) as gap
+			from monthly_data
+			order by gap desc) a
+		limit 1	
+    </select>    
+</mapper>
