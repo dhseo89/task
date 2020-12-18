@@ -1,0 +1,160 @@
+##원격 브랜치 업데이트(원격의 새로운 정보)
+  git remote update
+
+##git log
+  git log
+  git log --graph
+  git log  --oneline
+  git log  -p -2(로그 상세보기, 최근 2개)
+
+##config 확인
+1.    cd ./git/config
+2.   git config  --list
+
+##git pull
+  @다른 브랜치 pull받기
+      git pull origin 다른브랜치
+
+##git diff
+     @원격 브랜치와 비교
+         git diff origin/test1
+      @다른 브랜치와 비교
+          git diff test2 test1
+      @다른브랜치와 비교
+          git diff test2 test1 src/~~
+
+##local-remote 브랜치 연결
+    git branch --set-upstream-to origin
+
+##git stash
+1.   master 브랜치에 실수로 작업함
+2. master -> feature 수정 후 커밋하지않은 상황에서-> master면 feature에 영향을 준다(commit하면 발생안함)-> 아직 파일 수정이 끝나지않아서 commit하기 곤란함.. 다른 브랜치로 가기도 애매함...
+3. git stash시 같은 파일를 바꿨으나 다른부분을 변경한 경우 -> auto merging으로 잡아줌
+   @git stash 내용을 가지고 feature브랜치 만들기
+      1. master에 작업을 해버림
+      2. git stash
+      3. git pull(새로운 이력 업데이트)
+      4. git stash branch feature
+       -> 새로운 브랜치에서 새롭게 시작(stash list에          보관)
+     @git stash save -u
+        새롭게 추가한 파일도 함께 stash 영역에 저장
+     @git stash save -u 하잉
+        새로운 파일 + 이름주면서 저장
+     @git stash 내용확인
+        git stash show 1
+        git stash show -u 1(추가된 파일도 확인)
+        git stash show
+    git stash(최근것이 0)
+    git stash list
+    git stash pop
+    git stash apply 번호
+    git stash drop 번호
+       @stash name 붙이기
+           git stash save 개발환경저장
+           git stash push -m "quartz key test" -- nifi/src/main/java/com/sds/dep/~~/dd.java
+        @특정 파일만 stash 하고 싶은 경우
+           git stash -p || git stash --patch
+       한꺼번에 경로나 파일명으로 선택
+        git stash push -- **/common/utility/**
+        git stash push -- file-manager/src/main/a.java
+      1. 개발 환경 완성된 상태에서 stash 저장
+      2. 변경 파일이 있으면 다시 제거하고 올림
+      3. pull 받은 후에 stash apply 0
+      4. 충돌이 났으면 해결하고 다시 stash 저장
+##git branch
+    @원격 브랜치 삭제
+        git push --delete origin/test3
+    @로컬 브랜치 삭제
+        git branch -D test1
+     @로컬, 원격 브랜치 보기
+        git branch -a
+        git branch -r
+     @원격 브랜치에서 만든 브랜치를 push하고 싶을때
+     git push --set-upstream origin feature_br
+
+##git amend
+  -마지막 커밋을 수정하고싶은 경우
+
+	1. git add sample.rxt
+	2. git commit --amend
+	   @ 원격 브랜치에 push된 경우
+	      git push origin test1 --force 또는 -f
+
+##merge
+   -메인브랜치에서 진행
+	1. git merge origin/test2
+	2. git push origin develop(원격 push)
+	
+	@충돌났을 경우
+		1. vi로 충돌수정
+		2. git add .
+		3. git commit -m "conflict test"
+		4. git push origin develop
+
+##git rebase
+   ※같이 쓰는 브랜치에는 절대 사용하지 말 것
+   
+   @개발 중간에 추가로 push된 master의 이력을 삽입하고싶은 경우(이력정리)
+	1. git remote update
+	2. git rebase origin/master
+	      <원격에 push할 경우>
+	         git push origin test2 --force 또는 -f
+	   @중간에 낀 이력을 수정하는 경우
+	      1. git rebase -i HEAD~4(최근 4개)
+	        -pick(순서변경)
+	        -reword(메세지 변경)
+	        -edit(메세지 및 작업내용도 포함)
+	        -drop(삭제)
+	        -squash(커밋 합치기(위에것만 남음))
+	        -fixup(이잔메세지로 합침)
+		squash할 경우 밑에꺼 변경(최근것)
+
+##원격에 push된 상황이고 중간이력 바꿔서 원격까지 저장하고 싶은 경우
+	1.  git add .
+	         - error: cannot rebase: You have unstage changes.
+	        error: Please commit or stash them.
+	-> 이런 에러가 난다면 -> git stash
+	2.rebase -i HEAD~4
+	3.원하는것 선택해서 edit
+	4.git commit --amend
+	5.wq 저장
+	6.git rebase --continue
+	-You must edit all merge confilcts and then
+	mark them as resolved using git add
+	이런 에러가 난다면 -> git rebase --skip
+
+##cherry-pick
+    원하는 내용만 반영
+     git cherry-pick commitId1 commitId2
+
+@체리픽시 충돌났을 경우
+	1. 소스 수정하고 git add <path>(커밋 다시할 필요 없음)
+	2. git cherry-pick --continue
+	@체리픽 중단ㅁgit cherry-pick --abort
+
+##git reset
+ @git reset --hard 커밋id 
+    local commit기준으로 로컬파일까지 다 덮어씀
+
+@git reset --soft 커밋id
+   -git reset --soft HEAD~(마지막커밋)
+   stage 까지 
+ @git reset --mixed 커밋id
+     unstaged된 상태로 이동(파일을 고친 상태)
+
+##git fetch
+  pull은 fetch+merge
+  병합을 따로해야할 때 사용
+
+#git HEAD
+	@ HEAD 맨앞으로 이동
+	  git checkout HEAD
+
+##git 충돌
+  <<<<<<HEAD
+  Hello
+ ===========
+  Hello!
+>>>>>>>>>>>  aabaksnsnsjsccc92
+'==='로 구분된 위쪽부분이 로컬저장소,
+아래쪽이 remote의 변경내용
